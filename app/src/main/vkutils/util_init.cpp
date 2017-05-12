@@ -1048,46 +1048,6 @@ void init_swap_chain(struct sample_info &info, VkImageUsageFlags usageFlags) {
 void init_uniform_buffer(struct sample_info &info) {
     VkResult U_ASSERT_ONLY res;
     bool U_ASSERT_ONLY pass;
-    /****************************
-    float fov = glm::radians(45.0f);
-    if (info.width > info.height) {
-        fov *= static_cast<float>(info.height) / static_cast<float>(info.width);
-    }
-    info.Projection = glm::perspective(fov,
-                                       static_cast<float>(info.width) /
-                                       static_cast<float>(info.height), 0.1f, 100.0f);
-    info.View = glm::lookAt(
-        glm::vec3(5, 3, 10), // Camera is at (5,3,10), in World Space
-        glm::vec3(0, 0, 0),  // and looks at the origin
-        glm::vec3(0, -1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
-        );
-    info.Model = glm::mat4(1.0f);
-    // Vulkan clip space has inverted Y and half Z.
-    info.Clip = glm::mat4(1.0f,  0.0f, 0.0f, 0.0f,
-                          0.0f, -1.0f, 0.0f, 0.0f,
-                          0.0f,  0.0f, 0.5f, 0.0f,
-                          0.0f,  0.0f, 0.5f, 1.0f);
-
-    info.MVP = info.Clip * info.Projection * info.View * info.Model;
-    *************************/
-
-    /***************
-    mat4x4_perspective(demo->projection_matrix, (float)degreesToRadians(45.0f),
-                       1.0f, 0.1f, 100.0f);
-    mat4x4_look_at(demo->view_matrix, eye, origin, up);
-    mat4x4_identity(demo->model_matrix);
-
-    demo->projection_matrix[1][1]*=-1;  //Flip projection matrix from GL to Vulkan orientation
-    ----------
-    mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
-
-    // Rotate around the Y axis
-    mat4x4_dup(Model, demo->model_matrix);
-    mat4x4_rotate(demo->model_matrix, Model, 0.0f, 1.0f, 0.0f,
-                  (float)degreesToRadians(demo->spin_angle));
-    mat4x4_mul(MVP, VP, demo->model_matrix);
-
-    ****************/
 
     vec3 eye = {-5.0f, 3.0f, -10.0f};
     vec3 origin = {0.0f, 0.0f, 0.0f};
