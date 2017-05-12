@@ -1,0 +1,40 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+def ndkDir = properties.getProperty('ndk.dir')
+def shadercLibPath = file(ndkDir).absolutePath + '/sources/third_party/shaderc'
+
+def stlType = 'gnustl_static'
+
+def ndkbuild = 'ndk-build'
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.1'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+task build_shaderc(type:Exec) {
+    workingDir "${shadercLibPath}"
+    commandLine "${ndkDir}/${ndkbuild}", "NDK_PROJECT_PATH=.", "APP_BUILD_SCRIPT=Android.mk", "APP_STL:=${stlType}", "APP_ABI=all", "libshaderc_combined", "-j16"
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compile')) {
+        task.dependsOn build_shaderc
+    }
+}
