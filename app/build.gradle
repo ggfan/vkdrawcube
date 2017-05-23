@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+def stlType = 'gnustl_static'
+
 android {
     compileSdkVersion = 25
     buildToolsVersion = '25.0.2'
@@ -33,6 +35,30 @@ android {
     }
 }
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+def ndkDir = properties.getProperty('ndk.dir')
+def shadercLibPath = file(ndkDir).absolutePath + '/sources/third_party/shaderc'
+
+def ndkbuild = 'ndk-build.cmd'
+
+// Either this or the one inside CMakeLists.txt to build shaderc, no need for both
+task build_shaderc(type:Exec) {
+    workingDir "${shadercLibPath}"
+    commandLine "${ndkDir}/${ndkbuild}",
+            "NDK_PROJECT_PATH=.",
+            "APP_BUILD_SCRIPT=Android.mk",
+            "APP_STL:=${stlType}",
+            "APP_ABI=all", "-j8",
+            "libshaderc_combined"
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compile')) {
+        task.dependsOn build_shaderc
+    }
+}
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:25.2.0'
