@@ -6,7 +6,7 @@ app/build
 app/.externalNativeBuild
 .idea
 .gradle
-
+*.iml
 
 #################
 ## Eclipse
