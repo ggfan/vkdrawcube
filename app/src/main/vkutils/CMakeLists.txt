@@ -34,4 +34,49 @@ if(ANDROID)
                               android
                               log
                               native_app_glue)
+    include(ExternalProject)
+    set(SHADERC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build/shaderc)
+    set(lib_shaderc ${SHADERC_OUT_DIR}/${ANDROID_STL}/${ANDROID_ABI}/libshaderc.a)
+    set(SHADERC_SRC_DIR ${ANDROID_NDK}/sources/third_party/shaderc)
+    if(CMAKE_HOST_WIN32)
+        ExternalProject_Add(BuildShaderc
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ${ANDROID_NDK}/ndk-build.cmd --jobs=8 NDK_DEBUG=1
+                          NDK_PROJECT_PATH=${SHADERC_SRC_DIR}
+                          NDK_OUT=./shaderc
+                          NDK_LIBS_OUT=${SHADERC_OUT_DIR}
+                          APP_ABI=${ANDROID_ABI}
+                          APP_PLATFORM=${ANDROID_PLATFORM}
+                          APP_STL=${ANDROID_STL}
+                          NDK_TOOLCHAIN_VERSION=${ANDROID_TOOLCHAIN}
+                          APP_BUILD_SCRIPT=${SHADERC_SRC_DIR}/Android.mk
+                          libshaderc_combined
+
+            LOG_CONFIGURE 1
+            BUILD_ALWAYS 1
+            LOG_BUILD    1
+            BUILD_BYPRODUCTS ${lib_shaderc}
+            INSTALL_COMMAND "")
+    else(CMAKE_HOST_WIN32)
+        ExternalProject_Add(BuildShaderc
+            SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
+            CONFIGURE_COMMAND mkdir -p ${SHADERC_OUT_DIR}
+            BUILD_COMMAND ${ANDROID_NDK}/ndk-build --jobs=8 NDK_DEBUG=1
+                          NDK_PROJECT_PATH=${SHADERC_SRC_DIR}
+                          NDK_LIBS_OUT=${SHADERC_OUT_DIR}
+                          APP_ABI=${ANDROID_ABI}
+                          APP_PLATFORM=${ANDROID_PLATFORM}
+                          APP_STL=${ANDROID_STL}
+                          NDK_TOOLCHAIN_VERSION=${ANDROID_TOOLCHAIN}
+                          APP_BUILD_SCRIPT=${SHADERC_SRC_DIR}/Android.mk
+                          libshaderc_combined     # make the combined lib to use
+            BUILD_ALWAYS 1    # Force build
+            BUILD_BYPRODUCTS ${lib_shaderc}
+            INSTALL_COMMAND "")
+    endif(CMAKE_HOST_WIN32)
+
+    add_dependencies(${UTILS_NAME} BuildShaderc)
+    target_link_libraries(${UTILS_NAME} ${lib_shaderc})
+
 endif()

@@ -15,15 +15,12 @@
 #
 
 cmake_minimum_required(VERSION 3.4.1)
+
+# Build Vkutils Lib: variables are used by VkUtils lib build
+set(UTILS_NAME  vkutils)
 get_filename_component(SHADERC_DIR
                        ${ANDROID_NDK}/sources/third_party/shaderc
                        ABSOLUTE)
-get_filename_component(NDK_INCLUDE
-                       ${ANDROID_NDK}/platforms/android-24/arch-arm64/usr/include
-                       ABSOLUTE)
-
-# Build Vkutils Lib
-set(UTILS_NAME  vkutils)
 set(GLSLANG_SPIRV_INCLUDE_DIR ${SHADERC_DIR}/third_party/glslang)
 get_filename_component(PROJECT_SOURCE_DIR
                        "${CMAKE_SOURCE_DIR}/../../../.."
@@ -33,12 +30,6 @@ get_filename_component(VKUTILS_DIR
                        ABSOLUTE)
 add_library(vkutils_lib STATIC IMPORTED)
 add_subdirectory(${CMAKE_SOURCE_DIR}/../vkutils ${CMAKE_BINARY_DIR}/vkutils)
-
-# Import shaderc lib in NDK
-add_library(shaderc_lib STATIC IMPORTED)
-set_target_properties(shaderc_lib PROPERTIES IMPORTED_LOCATION
-                      ${SHADERC_DIR}/libs/${ANDROID_STL}/${ANDROID_ABI}/libshaderc.a)
-                      # build native_app_glue as a static lib
 
 # now build app's shared lib
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Werror -D VK_USE_PLATFORM_ANDROID_KHR")
@@ -52,15 +43,11 @@ target_include_directories(vk-drawcube PRIVATE
                            ${NDK_INCLUDE}
                            ${VKUTILS_DIR}
                            ${VKUTILS_DIR/glm}
-                           ${SHADERC_DIR}/third_party/spirv-tools/include
-                           ${SHADERC_DIR}/third_party/spirv-tools/include/spirv-tools
                            ${CMAKE_SOURCE_DIR}/../data
-                           ${CMAKE_SOURCE_DIR}/../vulkan_wrapper
-                           ${ANDROID_NDK}/sources/android/native_app_glue)
+                           ${CMAKE_SOURCE_DIR}/../vulkan_wrapper)
 
 # add lib dependencies ... vkutils library will pull in Vulkan libraryGood4me33
 target_link_libraries(vk-drawcube
                       android
                       log
-                      ${UTILS_NAME}
-                      shaderc_lib)
+                      ${UTILS_NAME})
